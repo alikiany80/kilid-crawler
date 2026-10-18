@@ -1,0 +1,31 @@
+{
+  "id": "9000003",
+  "title": "آپارتمان نمونه ۸۵ متری در نیاوران",
+  "listingType": "RENT",
+  "location": {
+    "label": "تهران - نیاوران",
+    "id": 247120,
+    "type": "REGION"
+  },
+  "priceToman": 1000000000,
+  "agreedPrice": false,
+  "rentToman": 55000000,
+  "areaM2": 85,
+  "rooms": 2,
+  "yearBuilt": 1402,
+  "agency": {
+    "id": "1000003",
+    "name": "آژانس نمونه ۳",
+    "logoUrl": "https://example.com/img/4.jpg",
+    "kind": "AGENCY"
+  },
+  "publisherKind": "AGENCY",
+  "coverImage": {
+    "url": "https://example.com/img/5.jpg",
+    "width": 1200,
+    "height": 900,
+    "alt": "تصویر نمونه آپارتمان ۸۵ متری"
+  },
+  "publishedAt": "2026-10-18T07:25:32.841Z",
+  "featured": false
+}

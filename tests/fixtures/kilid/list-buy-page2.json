@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "id": "9000001",
+      "title": "آپارتمان نمونه ۱۰۷ متری در نیلوفر",
+      "listingType": "BUY",
+      "location": {
+        "label": "تهران - نیلوفر",
+        "id": 247127,
+        "type": "REGION"
+      },
+      "priceToman": 62000000000,
+      "agreedPrice": false,
+      "areaM2": 107,
+      "rooms": 2,
+      "yearBuilt": 1404,
+      "agency": {
+        "id": "1000001",
+        "name": "آژانس نمونه ۱",
+        "logoUrl": "https://example.com/img/1.jpg",
+        "kind": "AGENCY"
+      },
+      "publisherKind": "AGENCY",
+      "coverImage": {
+        "url": "https://example.com/img/2.jpg",
+        "width": 1200,
+        "height": 900,
+        "alt": "تصویر نمونه آپارتمان ۱۰۷ متری"
+      },
+      "publishedAt": "2026-10-18T08:23:38.252Z",
+      "featured": false
+    },
+    {
+      "id": "9000002",
+      "title": "آپارتمان نمونه ۱۱۳ متری در هروی",
+      "listingType": "BUY",
+      "location": {
+        "label": "تهران - هروی",
+        "id": 255234,
+        "type": "REGION"
+      },
+      "priceToman": 45500000000,
+      "agreedPrice": false,
+      "areaM2": 113,
+      "rooms": 2,
+      "yearBuilt": 1402,
+      "agency": {
+        "id": "1000002",
+        "name": "آژانس نمونه ۲",
+        "kind": "FREELANCE_AGENT"
+      },
+      "publisherKind": "FREELANCE_AGENT",
+      "coverImage": {
+        "url": "https://example.com/img/3.jpg",
+        "width": 1200,
+        "height": 900,
+        "alt": "تصویر نمونه آپارتمان ۱۱۳ متری"
+      },
+      "publishedAt": "2026-10-18T08:23:25.664Z",
+      "featured": false
+    }
+  ],
+  "hasNextPage": true
+}

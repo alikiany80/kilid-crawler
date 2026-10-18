@@ -1,0 +1,28 @@
+{
+  "name": "kilid-crawler",
+  "version": "1.0.0",
+  "description": "Polite, zero-dependency crawler for kilid.com real-estate listings (Tehran) that emits normalized listing contract v1 records to SQLite, JSONL or HTTP.",
+  "private": false,
+  "license": "MIT",
+  "author": "alikiany80",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "bin": {
+    "kilid-crawler": "bin/kilid-crawler.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "contract",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "crawl": "node bin/kilid-crawler.js",
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "keywords": ["kilid", "crawler", "real-estate", "iran", "tehran", "scraper"]
+}

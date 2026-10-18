@@ -1,0 +1,16 @@
+node_modules/
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.jsonl
+.env
+.env.*
+!.env.example
+.agents/
+AGENTS.md
+CLAUDE.md
+.venv/
+__pycache__/
+.next/
+.DS_Store

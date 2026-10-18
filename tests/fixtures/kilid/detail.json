@@ -1,0 +1,102 @@
+{
+  "id": "9000001",
+  "title": "آپارتمان نمونه ۱۰۷ متری در نیلوفر",
+  "listingType": "BUY",
+  "location": {
+    "label": "تهران - نیلوفر",
+    "id": 247127,
+    "type": "REGION"
+  },
+  "priceToman": 62000000000,
+  "agreedPrice": false,
+  "rentToman": null,
+  "areaM2": 107,
+  "rooms": 2,
+  "agency": {
+    "id": "1000001",
+    "name": "آژانس نمونه ۱",
+    "phone": null,
+    "logoUrl": "https://example.com/img/6.jpg",
+    "kind": "AGENCY"
+  },
+  "publisherKind": "AGENCY",
+  "coverImage": {
+    "url": "https://example.com/img/7.jpg",
+    "width": 1200,
+    "height": 900,
+    "alt": "تصویر نمونه آپارتمان ۱۰۷ متری"
+  },
+  "publishedAt": "2026-10-18T08:23:38.252Z",
+  "featured": false,
+  "description": "توضیحات نمونه برای تست.\n\nآپارتمان نمونه با آسانسور، پارکینگ و انباری.\nقیمت {ویژه} برای تست پارسر.",
+  "images": [
+    "https://example.com/img/7.jpg",
+    "https://example.com/img/8.jpg",
+    "https://example.com/img/9.jpg",
+    "https://example.com/img/10.jpg",
+    "https://example.com/img/11.jpg",
+    "https://example.com/img/12.jpg",
+    "https://example.com/img/13.jpg",
+    "https://example.com/img/14.jpg",
+    "https://example.com/img/15.jpg",
+    "https://example.com/img/16.jpg",
+    "https://example.com/img/17.jpg",
+    "https://example.com/img/18.jpg",
+    "https://example.com/img/19.jpg",
+    "https://example.com/img/20.jpg",
+    "https://example.com/img/21.jpg",
+    "https://example.com/img/22.jpg",
+    "https://example.com/img/23.jpg",
+    "https://example.com/img/24.jpg",
+    "https://example.com/img/25.jpg"
+  ],
+  "specs": {
+    "yearBuilt": 1404,
+    "floor": 2,
+    "parkingCount": 1,
+    "elevator": true,
+    "storage": true,
+    "totalFloors": null,
+    "unitsPerFloor": null,
+    "wcCount": null,
+    "wcType": null,
+    "hotWater": null,
+    "heating": null,
+    "cooling": null,
+    "floorMaterial": null,
+    "buildingFacade": null,
+    "unitDirections": [],
+    "renovation": null
+  },
+  "features": [],
+  "breadcrumbs": [
+    {
+      "title": "خانه",
+      "url": "/"
+    },
+    {
+      "title": "خرید",
+      "url": "/buy"
+    },
+    {
+      "title": "تهران",
+      "url": "/buy/tehran"
+    },
+    {
+      "title": "منطقه 7",
+      "url": "/buy/tehran-region7"
+    },
+    {
+      "title": "نیلوفر",
+      "url": "/buy/tehran-region5-niloofar"
+    }
+  ],
+  "point": {
+    "lat": 35.73815008413058,
+    "lon": 51.43676827596461
+  },
+  "videoUrl": null,
+  "archived": false,
+  "propertyType": "APARTMENT_TOWER",
+  "updatedAt": "1970-01-21T17:51:51.818Z"
+}
