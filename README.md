@@ -81,6 +81,32 @@ Source-specific `details` keys: `location_id`, `agency_id`, `agency_name`, `agen
 `is_featured`, `property_type_raw`, `is_archived`, `video_url`, `breadcrumbs_json`, `specs_json`, `features_json`,
 and `raw_json` (the original detail payload without contact fields).
 
+## Project structure
+
+```text
+kilid-crawler/
+├── bin/kilid-crawler.js   # CLI entry point
+├── src/
+│   ├── cli.js             # flag parsing + --help
+│   ├── config.js          # flags + env -> validated config
+│   ├── index.js           # public library entry (KilidAdapter, CrawlRunner, StateStore, sinks)
+│   ├── kilid/
+│   │   ├── adapter.js     # list pages + detail pages for kilid.com
+│   │   ├── parser.js      # pure payload parsing (RSC/JSON -> fields)
+│   │   └── normalize.js   # parsed page -> normalized listing
+│   ├── listing.js         # normalized listing -> contract v1 object
+│   ├── runner.js          # crawl loop (recent/full, dedupe, detail fetch, stats)
+│   ├── state.js           # seen-table state store (node:sqlite, WAL)
+│   ├── sqlite.js          # schema + helpers used by the sqlite sink/state
+│   ├── sinks/             # sqlite, jsonl and http outputs
+│   ├── http-client.js     # throttle, timeouts, redirects, cookies, 429/5xx backoff
+│   ├── text.js            # Persian text normalization + phone redaction
+│   └── logger.js          # JSON-lines logger on stderr
+├── contract/              # listing contract v1 (schema + README), vendored verbatim
+├── tests/                 # offline tests + sanitized fixtures + schema validator
+└── package.json           # zero dependencies; scripts: crawl, test
+```
+
 ## Environment
 
 All variables are optional. See [.env.example](.env.example). Values are checked at startup, and invalid
@@ -107,6 +133,17 @@ Logs are JSON lines on **stderr**. Stdout is used only for `--jsonl=-`.
 - No contact data is collected or emitted: phone and contact fields are dropped, and phone numbers in titles
   and descriptions are replaced with a placeholder.
 
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `HTTP 429` / long pauses | Rate limiting by kilid.com. Keep `KILID_DELAY_MS` at its default or higher; do not run parallel instances. The client waits and retries automatically. |
+| `invalid flags or environment` (exit 2) | Check the flag spelling with `--help` and numeric env vars (`HTTP_TIMEOUT_MS`, `SINK_BATCH_SIZE`, ...). |
+| `SINK_URL and SINK_TOKEN are required` | Both are needed for `--output=http`; the other sinks work without them. |
+| `database is locked` | Another crawl is writing to the same `--db`; stop it or use a different DB file. |
+| Empty JSONL on stdout | `--no-details` and `--jsonl=-` still print summaries; logs go to stderr, so pipe stdout only (e.g. `| jq`). |
+| Node < 22.13 | `node:sqlite` is missing. Upgrade Node (the project targets 22.13+). |
+
 ## Library use
 
 ```js
@@ -122,7 +159,7 @@ await runner.crawl({ category: 'buy', maxPages: 1 });
 npm test          # = node --test "tests/**/*.test.js"
 ```
 
-The tests are fully offline. Fixtures have the real payload structure but synthetic text and example.com images.
+The suite currently has **53 offline tests** (Node.js built-in `node:test`). Fixtures have the real payload structure but synthetic text and example.com images.
 A contract test checks every normalized fixture against `contract/listing.v1.schema.json`, using a small validator
 included in the repo (`tests/schema-validator.js`).
 
