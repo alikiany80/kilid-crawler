@@ -72,6 +72,9 @@ class CrawlRunner {
 
         const batch = [];
         for (const summary of items) {
+          if (summary.cityName && !['تهران', 'Tehran', 'tehran'].includes(summary.cityName.trim())) {
+            continue; // skip out-of-scope cities (Homba is Tehran-focused)
+          }
           if (seen.has(summary.sourceId)) continue; // pinned/bumped posts repeat across pages
           seen.add(summary.sourceId);
           stats.listingsCrawled++;

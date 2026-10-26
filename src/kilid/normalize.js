@@ -37,7 +37,9 @@ function withoutContactData(value) {
   return out;
 }
 
-const positiveOrNull = v => (typeof v === 'number' && v > 0 ? v : null);
+const positiveOrNull = v => (typeof v === 'number' && v > 0 ? Math.round(v) : null);
+const cleanRent = v => (typeof v === 'number' && v >= 500_000 ? Math.round(v) : null);
+const cleanRooms = r => (Number.isInteger(r) && r >= 0 && r <= 10 ? r : null);
 
 function pricePerMeter(price, area, listingType) {
   return listingType === 'BUY' && price > 0 && area > 0 ? Math.round(price / area) : null;
@@ -61,11 +63,11 @@ function normalizeKilidSummary(item) {
     neighborhoodName,
     locationLabel: item.location?.label || null,
     priceToman,
-    rentToman: positiveOrNull(item.rentToman),
+    rentToman: cleanRent(item.rentToman),
     pricePerMeter: pricePerMeter(priceToman, areaM2, listingType),
     isPriceNegotiable: item.agreedPrice === undefined ? null : Boolean(item.agreedPrice),
     areaM2,
-    rooms: Number.isInteger(item.rooms) ? item.rooms : null,
+    rooms: cleanRooms(item.rooms),
     yearBuilt,
     buildingAge: yearBuilt ? currentJalaliYear() - yearBuilt : null,
     publisherKind: item.publisherKind || item.agency?.kind || null,

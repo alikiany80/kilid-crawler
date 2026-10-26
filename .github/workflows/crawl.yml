@@ -1,0 +1,53 @@
+name: crawl
+
+on:
+  schedule:
+    # Run every hour at minute 15
+    - cron: '15 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Crawl mode (recent or full)'
+        required: false
+        default: 'recent'
+      pages:
+        description: 'Pages to crawl per category'
+        required: false
+        default: '5'
+
+concurrency:
+  group: crawl-kilid
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Restore crawl state cache
+        uses: actions/cache@v4
+        with:
+          path: data/kilid.sqlite
+          key: kilid-state-${{ github.run_id }}
+          restore-keys: |
+            kilid-state-
+
+      - name: Run Kilid Crawler
+        env:
+          SINK_URL: ${{ secrets.SINK_URL }}
+          SINK_TOKEN: ${{ secrets.SINK_TOKEN }}
+          KILID_DELAY_MS: 400
+        run: |
+          mkdir -p data
+          MODE="${{ github.event.inputs.mode || 'recent' }}"
+          PAGES="${{ github.event.inputs.pages || '5' }}"
+          node bin/kilid-crawler.js --mode="$MODE" --pages="$PAGES" --output=http,sqlite --stop-after=30
