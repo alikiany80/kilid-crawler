@@ -13,7 +13,7 @@ on:
       pages:
         description: 'Pages to crawl per category'
         required: false
-        default: '5'
+        default: '3'
 
 concurrency:
   group: crawl-kilid
@@ -22,11 +22,13 @@ concurrency:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -45,9 +47,10 @@ jobs:
         env:
           SINK_URL: ${{ secrets.SINK_URL }}
           SINK_TOKEN: ${{ secrets.SINK_TOKEN }}
-          KILID_DELAY_MS: 400
+          KILID_DELAY_MS: 300
+          NODE_OPTIONS: "--no-warnings"
         run: |
           mkdir -p data
           MODE="${{ github.event.inputs.mode || 'recent' }}"
-          PAGES="${{ github.event.inputs.pages || '5' }}"
-          node bin/kilid-crawler.js --mode="$MODE" --pages="$PAGES" --output=http,sqlite --stop-after=30
+          PAGES="${{ github.event.inputs.pages || '3' }}"
+          node bin/kilid-crawler.js --mode="$MODE" --pages="$PAGES" --output=http,sqlite --stop-after=15
