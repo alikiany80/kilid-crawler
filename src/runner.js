@@ -1,6 +1,7 @@
 const { createLogger } = require('./logger');
 const { HttpError } = require('./http-client');
 const { toContractListing } = require('./listing');
+const { contentHash } = require('./state');
 
 /**
  * Source-agnostic crawl loop.
@@ -86,11 +87,14 @@ class CrawlRunner {
             if (details) record = details;
             else stats.detailsFailed++;
           }
-          batch.push(toContractListing(record, { crawledAt: this.now() }));
+          const listing = toContractListing(record, { crawledAt: this.now() });
+          batch.push(listing);
 
           if (known) {
             stats.updatedListings++;
-            consecutiveExisting++;
+            if (known.contentHash !== contentHash(listing)) {
+              consecutiveExisting++;
+            }
           } else {
             stats.newListings++;
             consecutiveExisting = 0;
