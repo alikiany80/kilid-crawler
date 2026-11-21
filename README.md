@@ -43,9 +43,9 @@ node bin/kilid-crawler.js --sync-regions --pages=0
 | Flag | Default | Meaning |
 |---|---|---|
 | `--category=buy\|rent\|all` | `all` | Which section(s) to crawl |
-| `--mode=recent\|full` | `recent` | `recent` stops after `--stop-after` known listings in a row. `full` walks all `--pages` |
+| `--mode=recent\|full` | `recent` | `recent` stops after `--stop-after` known unchanged listings in a row. `full` walks all `--pages` |
 | `--pages=N` | `3` | Maximum list pages per category (about 20 listings each). `0` means no crawl |
-| `--stop-after=N` | `30` | Known listings in a row that end a `recent` crawl |
+| `--stop-after=N` | `30` | Known unchanged listings in a row that end a `recent` crawl |
 | `--no-details` | off | Skip detail pages and emit list summaries only |
 | `--output=LIST` | `sqlite` | Comma list of `sqlite`, `jsonl`, `http` |
 | `--db=PATH` | `$KILID_DB_PATH` or `data/kilid.sqlite` | SQLite file for the crawl state and the sqlite output |
@@ -80,6 +80,15 @@ The crawl state (`seen` table) always lives in the `--db` file, whichever output
 Source-specific `details` keys: `location_id`, `agency_id`, `agency_name`, `agency_logo_url`, `agency_kind`,
 `is_featured`, `property_type_raw`, `is_archived`, `video_url`, `breadcrumbs_json`, `specs_json`, `features_json`,
 and `raw_json` (the original detail payload without contact fields).
+
+### Change-only emission
+
+The `http` output only receives listings that are **new** (not in the `seen` state table) or whose list-page
+content **changed** since the last run (a `change_hash` of the summary, ignoring volatile fields such as
+`crawledAt`, relative dates and the raw payload), plus known listings whose full details were fetched for the
+first time. Unchanged known listings are not POSTed, which keeps write load on the ingest database low.
+The local `sqlite`/`jsonl` outputs and the `seen` table (hashes, `last_seen_at`) are still updated for every
+listing walked. In `recent` mode, `--stop-after=N` ends the crawl after N consecutive known **unchanged** listings.
 
 ## Project structure
 

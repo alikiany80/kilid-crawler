@@ -1,7 +1,7 @@
 const { createLogger } = require('./logger');
 const { HttpError } = require('./http-client');
 const { toContractListing } = require('./listing');
-const { contentHash } = require('./state');
+const { changeHash } = require('./state');
 
 /**
  * Source-agnostic crawl loop.
@@ -12,12 +12,18 @@ const { contentHash } = require('./state');
  *   fetchDetails(summary) -> normalized listing | null
  *
  * Modes:
- *   recent: walk newest-first until `maxPages` or `stopAfterExisting` consecutive already-known listings.
+ *   recent: walk newest-first until `maxPages` or `stopAfterExisting` consecutive known, UNCHANGED listings.
  *   full:   walk up to `maxPages` regardless of known listings.
  * Details are fetched for new listings and for known ones whose full details were never emitted.
  * Each page is written (and flushed) to every sink, then recorded in the state store (so a failed sink write does not
  * mark listings as seen). A failing detail fetch keeps the summary; a failing page/sink aborts the crawl.
+ *
+ * Change-only emission: change-only sinks (http) receive a listing only when it is new, its summary changeHash
+ * changed, or its full details were fetched for the first time. Unchanged known listings are not POSTed.
+ * Local sinks (sqlite, jsonl) still receive every walked listing, and the state store records all of them.
  */
+const CHANGE_ONLY_SINKS = new Set(['http']);
+
 class CrawlRunner {
   constructor(adapter, state, sinks, { fetchDetails = true, now = () => new Date().toISOString(), logger } = {}) {
     if (!Array.isArray(sinks) || sinks.length === 0) throw new Error('CrawlRunner needs at least one sink');
@@ -40,14 +46,19 @@ class CrawlRunner {
     }
   }
 
-  /** Deliver one page to every sink (flushed, so nothing is buffered) before marking it seen. */
-  async writeAll(listings) {
+  /**
+   * Deliver one page to every sink (flushed, so nothing is buffered) before marking it seen.
+   * Change-only sinks get only the listings whose sourceId is in `changedIds`.
+   */
+  async writeAll(listings, { changedIds = null, changeHashes = null } = {}) {
     if (!listings.length) return;
+    const changed = changedIds ? listings.filter(l => changedIds.has(l.sourceId)) : listings;
     for (const sink of this.sinks) {
-      await sink.write(listings);
+      const out = CHANGE_ONLY_SINKS.has(sink.name) ? changed : listings;
+      if (out.length) await sink.write(out);
       await sink.flush();
     }
-    this.state.markSeen(listings, { now: this.now() });
+    this.state.markSeen(listings, { now: this.now(), changeHashes });
   }
 
   async crawl({ category, mode = 'recent', maxPages = 3, stopAfterExisting = 30 } = {}) {
@@ -60,7 +71,8 @@ class CrawlRunner {
     const log = this.log.child({ source, category, mode });
     const stats = { pagesCrawled: 0, listingsCrawled: 0, newListings: 0, updatedListings: 0, detailsFailed: 0 };
     const seen = new Set();
-    let consecutiveExisting = 0;
+    let consecutiveExisting = 0; // consecutive known listings whose content did not change
+    let unchanged = 0;
     let cursor = null;
     let stopReason = 'max_pages';
 
@@ -72,6 +84,8 @@ class CrawlRunner {
         if (!items.length) { stopReason = 'empty_page'; break; }
 
         const batch = [];
+        const changedIds = new Set();
+        const changeHashes = new Map();
         for (const summary of items) {
           if (summary.cityName && !['تهران', 'Tehran', 'tehran'].includes(summary.cityName.trim())) {
             continue; // skip out-of-scope cities (Homba is Tehran-focused)
@@ -81,18 +95,29 @@ class CrawlRunner {
           stats.listingsCrawled++;
 
           const known = this.state.get(summary.sourceId);
+          const summaryHash = changeHash(toContractListing(summary, { crawledAt: '' }));
           let record = summary;
+          let gotDetails = false;
           if (this.fetchDetails && !known?.hasFullDetails) {
             const details = await this.loadDetails(summary, log);
-            if (details) record = details;
+            if (details) { record = details; gotDetails = true; }
             else stats.detailsFailed++;
           }
           const listing = toContractListing(record, { crawledAt: this.now() });
           batch.push(listing);
+          changeHashes.set(listing.sourceId, summaryHash);
+
+          // Legacy rows (before change_hash existed) count as unchanged once; their hash is backfilled on markSeen.
+          const contentChanged = known ? (known.changeHash != null && known.changeHash !== summaryHash) : true;
+          const changed = !known || contentChanged || gotDetails;
+          if (changed) changedIds.add(listing.sourceId);
 
           if (known) {
             stats.updatedListings++;
-            if (known.contentHash !== contentHash(listing)) {
+            if (changed) {
+              consecutiveExisting = 0;
+            } else {
+              unchanged++;
               consecutiveExisting++;
             }
           } else {
@@ -101,8 +126,11 @@ class CrawlRunner {
           }
         }
 
-        await this.writeAll(batch);
-        log.info('page processed', { page: page ?? pageIndex, items: items.length, written: batch.length, ...stats });
+        await this.writeAll(batch, { changedIds, changeHashes });
+        log.info('page processed', {
+          page: page ?? pageIndex, items: items.length, written: batch.length, changed: changedIds.size, unchanged,
+          consecutiveUnchanged: consecutiveExisting, ...stats
+        });
 
         if (mode === 'recent' && consecutiveExisting >= stopAfterExisting) { stopReason = 'caught_up'; break; }
         if (!nextCursor) { stopReason = 'last_page'; break; }
@@ -113,7 +141,7 @@ class CrawlRunner {
       throw err;
     }
 
-    log.info('crawl finished', { ...stats, stopReason });
+    log.info('crawl finished', { ...stats, unchanged, stopReason });
     return { ...stats, stopReason };
   }
 }
