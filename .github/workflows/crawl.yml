@@ -46,8 +46,8 @@ jobs:
         env:
           SINK_URL: ${{ secrets.SINK_URL }}
           SINK_TOKEN: ${{ secrets.SINK_TOKEN }}
-          HTTP_TIMEOUT_MS: "60000"
-          SINK_BATCH_SIZE: "50"
+          HTTP_TIMEOUT_MS: "120000"
+          SINK_BATCH_SIZE: "20"
           KILID_DELAY_MS: 300
           NODE_OPTIONS: "--no-warnings"
         run: |
